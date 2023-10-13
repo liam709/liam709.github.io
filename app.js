@@ -1,4 +1,3 @@
-//Get html elements
 const grid = document.getElementById('grid-container');
 const btnRandomMap = document.getElementById('btn-random-map');
 const btnStartPosition = document.getElementById('btn-start-position');
@@ -6,12 +5,11 @@ const btnGoalPosition = document.getElementById('btn-goal-position');
 const btnBFS = document.getElementById('btn-bfs');
 const btnDFS = document.getElementById('btn-dfs')
 
-//Mutatable variables
 let startNode;
 let goalNode;
 let numRows = 20;
 let numCols = 20;
-let isRandom = false;
+let isRandom = true;
 let isStartSelected = false;
 let isGoalSelected = false;
 let pathFound = false;
@@ -21,7 +19,6 @@ let isDFS = false;
 let canSearchBFS = false;
 let canSearchDFS = false;
 
-//Generates grid of divs with class id in the form cell-row-col
 function generateGrid() {
     for (row = 0; row < numRows; row++) {
         for (col = 0; col < numCols; col++) {
@@ -37,7 +34,6 @@ function generateGrid() {
     }
 }
 
-//Resets state of grid
 function regenerate() {
     //Loops through entire original grid and removes each element, and generates a new grid.
     while (grid.firstChild) {
@@ -60,12 +56,11 @@ function regenerate() {
     generateGrid();
 }
 
-//Choose starting position
 function setStartPosition(row, col) {
     let cell = document.getElementById(`cell-${row}-${col}`);
     try {
-        if (!cell.classList.contains('wall') && (!cell.classList.contains('goal'))) {
-            cell.classList.add('start')
+        if (!cell.classList.contains('wall') && !cell.classList.contains('goal')) {
+            cell.classList.add('start');
             startNode = { row, col };
             btnStartPosition.disabled = true;
         } else {
@@ -77,31 +72,38 @@ function setStartPosition(row, col) {
                 }
             }
         }
-        console.log('Start position', startNode)
+
+        if (startNode && goalNode) {
+            // Both start and goal cells are selected, so enable the search buttons
+            btnBFS.disabled = false;
+            btnDFS.disabled = false;
+        }
     } catch (err) {
         console.log(err)
     }
 }
 
-//Similar to above but for goal node. 
 function setGoalPosition(row, col) {
     let cell = document.getElementById(`cell-${row}-${col}`);
     try {
-        if (!cell.classList.contains('wall') && (!cell.classList.contains('start'))) {
+        if (!cell.classList.contains('wall') && !cell.classList.contains('start')) {
             cell.classList.add('goal');
             goalNode = { row, col };
             btnGoalPosition.disabled = true;
         } else {
             alert('Cannot place goal position in water! Please place on grass!')
         }
-        console.log('End position', goalNode)
+
+        if (startNode && goalNode) {
+            // Both start and goal cells are selected, so enable the search buttons
+            btnBFS.disabled = false;
+            btnDFS.disabled = false;
+        }
     } catch (err) {
         console.log(err)
     }
-
 }
 
-//Check if cell is wall
 function isWall(row, col) {
     let cell = document.getElementById(`cell-${row}-${col}`);
     if (cell.classList.contains('wall')) {
@@ -109,13 +111,13 @@ function isWall(row, col) {
     }
 }
 
-//Check if valid, if row is oob or col is oob, not valid. 
+//If is not oob, is valid move.
 function isValid(row, col) {
     if ((row >= 0 && row < numRows) && (col >= 0 && col < numCols)) {
         return true;
     }
 }
-//Regenerates grid when clicked
+
 btnRandomMap.addEventListener('click', () => {
     isRandom = true;
     regenerate()
@@ -126,12 +128,10 @@ btnStartPosition.addEventListener('click', () => {
     isStartSelected = true;
 });
 
-//Sets goal to true, so we can only select one.
 btnGoalPosition.addEventListener('click', () => {
     isGoalSelected = true;
 })
 
-//Run BFS
 btnBFS.addEventListener('click', () => {
     isBFS = true;
     graphTraversal(startNode, goalNode);
@@ -140,7 +140,6 @@ btnBFS.addEventListener('click', () => {
 
 })
 
-//Run DFS
 btnDFS.addEventListener('click', () => {
     isDFS = true;
     graphTraversal(startNode, goalNode);
@@ -162,6 +161,7 @@ grid.addEventListener('click', (event) => {
     //allows me to only place one start
     isStartSelected = false;
     isGoalSelected = false;
+
 })
 
 function graphTraversal(startNode, goalNode) {
@@ -176,7 +176,7 @@ function graphTraversal(startNode, goalNode) {
     function enqueue(row, col, parentNode) {
         //Create a key for each node enqueued.
         let key = row + '-' + col;
-        //If not oob, and does not already exist in closed list, and not a wall, we can enqueue.
+        //If not oob, and does not already exist in closed list.
         if ((isValid(row, col)) && (!closedList.has(key)) && (!isWall(row, col))) {
             openList.push({ row, col });
             closedList.add(key);
@@ -196,7 +196,7 @@ function graphTraversal(startNode, goalNode) {
 
         let cell;
 
-        //The only difference in the two algorithms. 
+        //BFS or DFS
         if (isBFS) {
             cell = openList.shift();
         }
@@ -207,13 +207,14 @@ function graphTraversal(startNode, goalNode) {
         let row = cell.row;
         let col = cell.col;
 
-        //Enqueue the neighbors of each cell
+        //Enqueue the neighbors
         enqueue(row, col - 1, { row, col }); //Left
         enqueue(row, col + 1, { row, col }); // Right
         enqueue(row - 1, col, { row, col }); // Up
         enqueue(row + 1, col, { row, col }); //Down
-        openListHistory.push(openList.slice());
 
+        openListHistory.push(openList.slice());
+        //console.log('closed', closedList)
         //If row, col index are equal to goalNode row and col index. We have reached the end node.
         if (row === goalNode.row && col === goalNode.col) {
             pathFound = true;
@@ -252,28 +253,36 @@ function findPath(parent, currentNode) {
 }
 
 //For each element in path, color each cell with some time delay.
-function highlightPath(path) {
-    path.forEach((node, index) => {
-        const { row, col } = node;
-        const cell = document.getElementById(`cell-${row}-${col}`);
-        setTimeout(() => {
-            cell.classList.remove('openList')
-            cell.classList.add('visited');
-        }, 100 * index)
-    });
-}
-
 function highlightOpenList(openListHistory) {
     openListHistory.forEach(function (innerArray, i) {
         innerArray.forEach(function (element, j) {
             // Access each element and perform operations
             const { row, col } = element;
             const cell = document.getElementById(`cell-${row}-${col}`);
-            //Color each cell after some time..
-            setTimeout(() => {
-                cell.classList.add('openList');
-            }, 25 * i);
+
+            // Skip changing color for start and goal cells
+            if (!cell.classList.contains('start') && !cell.classList.contains('goal')) {
+                // Color each cell after some time...
+                setTimeout(() => {
+                    cell.classList.add('openList');
+                }, 25 * i);
+            }
         });
+    });
+}
+
+function highlightPath(path) {
+    path.forEach((node, index) => {
+        const { row, col } = node;
+        const cell = document.getElementById(`cell-${row}-${col}`);
+
+        // Skip changing color for start and goal cells
+        if (!cell.classList.contains('start') && !cell.classList.contains('goal')) {
+            setTimeout(() => {
+                cell.classList.remove('openList');
+                cell.classList.add('visited');
+            }, 100 * index);
+        }
     });
 }
 

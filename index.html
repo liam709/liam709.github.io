@@ -1,17 +1,23 @@
 <!DOCTYPE html>
 <html>
-
+    
 <head>
     <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 
 <body>
     <nav class='nav-bar'>
-        <button id=btn-random-map>Randomize Map</button>
-        <button id='btn-start-position'>Choose start</button>
-        <button id='btn-goal-position'>Choose goal</button>
-        <button id='btn-bfs'>Search using BFS</button>
-        <button id='btn-dfs'>Search using DFS</button>
+        <div class="nav-group">
+            <button id="btn-random-map">Randomize Map</button>
+        </div>
+        <div class="nav-group">
+            <button id='btn-start-position'>Choose start</button>
+            <button id='btn-goal-position'>Choose goal</button>
+        </div>
+        <div class="nav-group">
+            <button id='btn-bfs'>Search using BFS</button>
+            <button id='btn-dfs'>Search using DFS</button>
+        </div>
     </nav>
     <div id='grid-container'>
     </div>
