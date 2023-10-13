@@ -261,7 +261,7 @@ function highlightOpenList(openListHistory) {
 
             // Skip changing color for start and goal cells
             if (!cell.classList.contains('start') && !cell.classList.contains('goal')) {
-                // Color each cell after some time...
+                // Color each cell after some time.....
                 setTimeout(() => {
                     cell.classList.add('openList');
                 }, 25 * i);
