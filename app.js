@@ -158,7 +158,6 @@ grid.addEventListener('click', (event) => {
     if (isGoalSelected) {
         setGoalPosition(row, col);
     }
-    //allows me to only place one start
     isStartSelected = false;
     isGoalSelected = false;
 
